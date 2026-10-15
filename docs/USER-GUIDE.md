@@ -49,10 +49,21 @@ ever leaks, revoke the system and add it again — a fresh key, one command.
 Everything else is off the table on purpose: no shell, no dialplan edits, no
 database access, no recordings or audio.
 
-## 4. Running a command today
+## 4. Running a command
 
-While the console panel for this is rolling out, commands go through the
-console API with your normal console token. Example with `curl`:
+From your EchoGuard console: **Sidebar → Phone Systems**.
+
+1. Click the system in the list (green `online` = agent checking in).
+2. Press the op you want: **Snapshot**, **Diagnose**, **Reload**, or pick a
+   module and **Run** the module-reload.
+3. The command shows as *pending* until the agent picks it up on its next
+   poll (~10 seconds), then the result renders right under it — snapshot as
+   tiles, diagnose as plain checks + hints, everything else as raw JSON.
+
+History for the selected system (last 8 commands, who ran them, exit codes)
+sits below the buttons.
+
+Prefer the API? The same flow with `curl`:
 
 ```bash
 # list your connected systems
@@ -74,7 +85,7 @@ The node detail response carries the last commands with their status
 (`pending → done/error`), exit code, and the result JSON. The agent polls
 every ~10 seconds, so results appear within one or two poll cycles.
 
-To reload a single module:
+To reload a single module over the API:
 
 ```bash
 curl -s -X POST -H "Authorization: Bearer $TOKEN" \
