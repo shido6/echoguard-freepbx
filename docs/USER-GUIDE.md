@@ -172,3 +172,15 @@ rest of your console. Revoke the node to cut everyone off instantly.
 **Where's the setup key stored on your side?**
 Only as a SHA-256 hash. It can't be read back — if you lose it, you revoke
 and re-add to get a fresh one.
+
+## 10. Where this comes from (no surprises)
+
+If you ever go deeper than this connector, the signaling-capture world it
+eventually plugs into is open: **HEP** — the capture protocol from the
+[sipcapture project](https://sipcapture.org/). Two honest doors if you want to
+run all of that yourself: [HOMER](https://github.com/sipcapture/homer) (100%
+open source, install steps in the project wiki) or
+[hepic](https://hepic.tel/deploy/) (commercial on-prem — that page starts with
+a consultation, not a download). The ecosystem map:
+[awesome-hep](https://github.com/sipcapture/awesome-hep). None of them are us —
+we point at them because they built the floor we're standing on.

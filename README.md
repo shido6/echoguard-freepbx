@@ -77,6 +77,20 @@ sudo ./uninstall.sh
 
 Then revoke the node in the EchoGuard console.
 
+## Built on the shoulders of giants
+
+The SIP-signaling mirroring on our roadmap rides **HEP**, the open capture
+protocol maintained by the [sipcapture project](https://sipcapture.org/) — the
+same open plumbing behind [HOMER](https://github.com/sipcapture/homer) (the
+100% open-source capture system) and [hepic](https://hepic.tel) (QXIP's
+carrier-grade stack), with the full ecosystem catalogued in
+[awesome-hep](https://github.com/sipcapture/awesome-hep). We didn't invent the
+standard, we don't ship their code, and we never brand anything of ours as
+"Hepic" or "HOMER" — those names belong to their projects. Naming them here
+simply points at the standard this lane speaks; no affiliation, sponsorship, or
+endorsement is implied. FreePBX and Asterisk are their respective projects'
+trademarks — this is an independent, community connector.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
