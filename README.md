@@ -4,6 +4,9 @@ Connect a FreePBX system to [EchoGuard](https://echoguard.ca) so Greg can take
 snapshots, run a small set of bounded diagnostics, and issue reload commands
 when you ask — **outbound-only, no inbound ports, no free-form shell**.
 
+**Guides:** [Admin guide](docs/ADMIN-GUIDE.md) (install, secure, troubleshoot)
+· [User guide](docs/USER-GUIDE.md) (connect once, then ask for a look)
+
 ```
 FreePBX box ──(outbound HTTPS poll)──▶ app.echoguard.ca ──▶ your EchoGuard console
 ```
