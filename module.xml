@@ -8,6 +8,7 @@
   <author>Gregory Merriweather</author>
   <url>https://echo.echoguard.ca</url>
   <description>Show this system's Echo connector status inside FreePBX — the node it is connected as, when it last reported, and how many SIP signalling events it has forwarded. Read-only: the connector itself is installed by the Echo setup string and runs as echo-connector.service.</description>
+  <category>Connectivity</category>
   <modulestatus>enabled</modulestatus>
   <requires>
     <dependency>
