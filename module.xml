@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
-  <name>echoguard</name>
+  <rawname>echoguard</rawname>
+  <repo>local</repo>
+  <name>Echo connector</name>
   <version>0.2.0</version>
-  <localelang>en_US</localelang>
+  <publisher>EchoGuard Communications</publisher>
   <license>MIT</license>
-  <copyright>2026 EchoGuard Communications</copyright>
-  <author>Gregory Merriweather</author>
-  <url>https://echo.echoguard.ca</url>
-  <description>Show this system's Echo connector status inside FreePBX — the node it is connected as, when it last reported, and how many SIP signalling events it has forwarded. Read-only: the connector itself is installed by the Echo setup string and runs as echo-connector.service.</description>
+  <licenselink>https://opensource.org/licenses/MIT</licenselink>
   <category>Connectivity</category>
-  <modulestatus>enabled</modulestatus>
-  <requires>
-    <dependency>
-      <modulename>core</modulename>
-      <minversion>15.0</minversion>
-    </dependency>
-  </requires>
-  <provides>
-    <function>
-      <name>echoguard_page</name>
-      <description>Echo connector status page</description>
-    </function>
-  </provides>
+  <candisable>no</candisable>
+  <canuninstall>yes</canuninstall>
+  <description>Show this system's Echo connector status inside FreePBX — the node it is connected as, when it last reported, and how many SIP signalling events it has forwarded. Read-only: the connector itself is installed by the Echo setup string and runs as echo-connector.service.</description>
+  <menuitems>
+    <echoguard>
+      <name>Echo connector</name>
+      <type>setup</type>
+      <category>Connectivity</category>
+    </echoguard>
+  </menuitems>
 </module>

@@ -209,19 +209,18 @@ say "platform detected: ${PLATFORM}"
 
 resolve_adopt
 
-# Read the helper's own counter so we can tell whether this install produced a
-# fresh successful send (as opposed to a send that happened before an upgrade).
-state_last_send() {
+# Signals forwarded so far, from the helper's own counter. Zero is normal until
+# the first call: the connector's self-test above already proved Echo accepts
+# this node, and that counter only moves on captured SIP traffic.
+state_events() {
   python3 - "${STATE_DIR}/state.json" 2>/dev/null <<'PY' || echo 0
 import json, sys
 try:
-    print(int(json.load(open(sys.argv[1])).get("last_send_ok") or 0))
+    print(int(json.load(open(sys.argv[1])).get("sent_total") or 0))
 except Exception:
     print(0)
 PY
 }
-
-SEND_BEFORE="$(state_last_send)"
 
 # ------------------------------------------------------------------ connector
 download_verified
@@ -246,17 +245,8 @@ if [[ "$PLATFORM" == "freepbx" || "$PLATFORM" == "asterisk" ]]; then
   ensure_capture_modules
 fi
 
-# Wait for the helper's first successful send to Echo, so the installer either
-# confirms delivery or says plainly that it has not happened yet.
-REPORTED="not yet"
-for _ in $(seq 1 20); do
-  SEND_NOW="$(state_last_send)"
-  if [[ "$SEND_NOW" -gt "$SEND_BEFORE" && "$SEND_NOW" -gt 0 ]]; then
-    REPORTED="confirmed (Echo accepted a signal at $(date -d @"$SEND_NOW" '+%H:%M:%S' 2>/dev/null || echo "$SEND_NOW"))"
-    break
-  fi
-  sleep 1
-done
+SERVICE_STATE="$(systemctl is-active echo-connector 2>/dev/null || true)"
+EVENTS="$(state_events)"
 
 NODE_ID="${TOKEN#EC-}"
 NODE_ID="${NODE_ID%%.*}"
@@ -281,10 +271,17 @@ if [[ "$NO_MODULE" -eq 0 ]]; then
     if id asterisk >/dev/null 2>&1; then
       chown -R asterisk:asterisk "$MODULE_DIR" 2>/dev/null || true
     fi
+    # Copying files is not enough: FreePBX only shows a module after it is
+    # installed into its registry. installlocal handles unsigned local modules.
     if command -v fwconsole >/dev/null 2>&1; then
-      fwconsole ma list >/dev/null 2>&1 || true      # refresh the module registry
+      fwconsole ma installlocal >/dev/null 2>&1 || true
+      if fwconsole ma list 2>/dev/null | grep -q '| echoguard .*| Enabled'; then
+        say "module registered: Admin -> Connectivity -> Echo connector"
+      else
+        echo "note: FreePBX did not register the page automatically. Run:" >&2
+        echo "        fwconsole ma installlocal" >&2
+      fi
     fi
-    say "module installed: Admin -> Connectivity -> Echo connector"
   else
     echo "note: this does not look like a FreePBX admin tree; skipping the console page"
   fi
@@ -300,8 +297,8 @@ Connected.
   node      : ${NODE_ID}
   platform  : ${PLATFORM}
   endpoint  : ${ECHO_BASE}
-  service   : systemctl status echo-connector
-  first send: ${REPORTED}
+  service   : ${SERVICE_STATE:-unknown}  (systemctl status echo-connector)
+  events    : ${EVENTS} so far (0 is normal until the first call)
   your page : ${ECHO_BASE}
 
 Signals appear in your account as calls happen. If the node goes quiet, check
