@@ -61,11 +61,21 @@ The installer:
    `/opt/echo-connector/`, and starts `echo-connector.service`,
 3. loads `res_hep.so` / `res_hep_pjsip.so` if Asterisk has not already, and
    tells you if they are still not loaded,
-4. installs the **Connectivity → Echo connector** page into FreePBX,
+4. installs the **Connectivity → Echo connector** page into FreePBX and
+   registers it with `fwconsole ma installlocal`,
 5. writes `/var/lib/echo-connector/node.json` so the page can show the node
    without ever reading the key.
 
 Status appears in your account within ~30 seconds.
+
+### Verified on a real FreePBX
+
+Run against FreePBX 17.0.33.2 / Asterisk 22 in a Debian 12 lab, not a mock:
+the stock disabled `hep.conf` was adopted with a backup, `res_hep_pjsip.so` was
+loaded (FreePBX ships it idle), the connector's self-test was accepted by Echo,
+three SIP OPTIONS produced six forwarded events, `fwconsole reload` left the
+capture block and the running service intact, and the page rendered as the
+`asterisk` web user with live node id and counts.
 
 ## Dry run and verification
 

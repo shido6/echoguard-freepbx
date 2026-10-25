@@ -74,8 +74,10 @@ What happens, in order:
 6. `install.sh` loads `res_hep.so` / `res_hep_pjsip.so` if they were idle and
    prints the result.
 7. It installs the FreePBX page into
-   `/var/www/html/admin/modules/echoguard/` and writes
-   `/var/lib/echo-connector/node.json` (0644, node id and platform only).
+   `/var/www/html/admin/modules/echoguard/`, registers it with
+   `fwconsole ma installlocal`, and writes `/var/lib/echo-connector/node.json`
+   (0644, node id and platform only). If FreePBX ever stops listing the page,
+   that same `fwconsole ma installlocal` is the fix.
 
 ### Step 3 — confirm
 
@@ -148,6 +150,7 @@ reads `agent.env`, because that file is root-only and contains the key.
 | Service flaps | port taken by an older install | `ss -lunp \| grep <port>`; remove the stale process, then restart |
 | Page says *Quiet* but service is active | no signals since install | that is normal until the first call; place a test call |
 | Page says *Not connected* | `node.json` missing | re-run `install.sh` (it rewrites it) |
+| No *Echo connector* item under Connectivity | module copied but not registered | `fwconsole ma installlocal`, then reload the admin UI |
 
 ## 8. Files installed on the box
 
