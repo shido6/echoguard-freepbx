@@ -10,7 +10,7 @@
 #
 # The key comes from your Echo page: press "+ Connect a phone system", name it,
 # press "Generate the one-line setup", and take the quoted part. It looks like
-#   EC-8b11ef6c.<64 hex chars>
+#   EC-7f3a9c21.<64 hex chars>
 # and it is shown once, valid for 24 hours. This script never asks for a new one.
 #
 # What this script is: a FreePBX-shaped wrapper around the official Echo

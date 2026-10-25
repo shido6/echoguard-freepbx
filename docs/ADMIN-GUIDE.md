@@ -36,7 +36,7 @@ system**. Name it (e.g. `office-pbx`) and press **Generate the one-line
 setup**. Echo prints:
 
 ```
-curl -fsSL https://echo.echoguard.ca/connector/connect.sh | bash -s -- 'EC-8b11ef6c.<64 hex chars>'
+curl -fsSL https://echo.echoguard.ca/connector/connect.sh | bash -s -- 'EC-7f3a9c21.<64 hex chars>'
 ```
 
 The quoted part is the key. You can paste that whole line, or use this repo's
@@ -52,7 +52,7 @@ node and create a new one.
 ```bash
 tar xzf echoguard-freepbx-0.2.0.tar.gz
 cd echoguard-freepbx
-sudo ./install.sh 'EC-8b11ef6c.<64 hex chars>'
+sudo ./install.sh 'EC-7f3a9c21.<64 hex chars>'
 ```
 
 What happens, in order:

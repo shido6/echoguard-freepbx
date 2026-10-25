@@ -22,13 +22,13 @@ No inbound ports. No audio. Your phone system calls out; nothing calls in.
 3. Copy the line. It looks like:
 
    ```
-   curl -fsSL https://echo.echoguard.ca/connector/connect.sh | bash -s -- 'EC-8b11ef6c.<64 hex chars>'
+   curl -fsSL https://echo.echoguard.ca/connector/connect.sh | bash -s -- 'EC-7f3a9c21.<64 hex chars>'
    ```
 
 4. On the FreePBX server, over SSH, one time:
 
    ```bash
-   curl -fsSL https://echo.echoguard.ca/connector/connect.sh | sudo bash -s -- 'EC-8b11ef6c.<64 hex chars>'
+   curl -fsSL https://echo.echoguard.ca/connector/connect.sh | sudo bash -s -- 'EC-7f3a9c21.<64 hex chars>'
    ```
 
    Or, if you were handed this repo's installer instead, run

@@ -30,6 +30,10 @@ page as a node with the name you chose. For that node Echo shows:
 | **events** | total signalling messages forwarded |
 | **version / platform** | what the box reports about itself |
 
+That is the whole node record Echo keeps — name, platform, last seen, last
+signal, events, version, and who created it. The FreePBX page shows the same
+fields locally, so an admin can tell whether the two agree.
+
 From the events Echo can show registrations, call setup, failed calls, and
 trunk behaviour in plain words. Signalling only: no RTP, no audio, no
 recordings, never written to disk on the way through.
