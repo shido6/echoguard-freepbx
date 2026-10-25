@@ -31,6 +31,7 @@ MANIFEST_URL="${ECHO_BASE}/connector/manifest.json"
 MODULE_DIR="/var/www/html/admin/modules/echoguard"
 STATE_DIR="/var/lib/echo-connector"
 NODE_INFO="${STATE_DIR}/node.json"
+HEP_CONF="${HEP_CONF:-/etc/asterisk/hep.conf}"
 
 TOKEN=""
 DRY_RUN=0
@@ -75,6 +76,37 @@ detect_platform() {
   else
     echo unknown
   fi
+}
+
+# FreePBX and Debian both ship an /etc/asterisk/hep.conf that is present but
+# disabled (the stock sample: enabled = no, capture_address 192.168.1.1:9061).
+# Upstream refuses to touch any hep.conf it did not create, which would stop a
+# first-time install on a stock FreePBX box. Distinguish the two cases: an
+# inactive capture is safe to adopt (a backup is kept), an active one is the
+# admin's decision and needs the explicit flag.
+hep_conf_unmarked() {
+  [[ -f "$HEP_CONF" ]] || return 1
+  ! grep -q 'echoguard-connector' "$HEP_CONF"
+}
+
+hep_conf_disabled() {
+  local setting
+  setting="$(awk -F'=' '/^[[:space:]]*enabled[[:space:]]*=/{v=$2; gsub(/^[[:space:]]+/,"",v); sub(/[[:space:];].*$/,"",v); print tolower(v); exit}' "$HEP_CONF")"
+  [[ "$setting" == "no" ]]
+}
+
+resolve_adopt() {
+  [[ "$PLATFORM" == "freepbx" || "$PLATFORM" == "asterisk" ]] || return 0
+  hep_conf_unmarked || return 0
+  [[ "$ADOPT" -eq 1 ]] && return 0
+  if hep_conf_disabled; then
+    say "existing ${HEP_CONF} is the stock sample with capture disabled - adopting it (backup kept)"
+    ADOPT=1
+    return 0
+  fi
+  die "${HEP_CONF} already forwards signals somewhere else and was not created by this
+       installer. Re-run with --adopt-existing to replace that capture with Echo;
+       the original is backed up under /var/backups/echo-connector/."
 }
 
 # Signals only flow if Asterisk's HEP capture modules are loaded. Upstream
@@ -174,6 +206,8 @@ PLATFORM="$(detect_platform)"
 [[ "$PLATFORM" != "unknown" ]] || die "no FreePBX or Asterisk found on this box"
 
 say "platform detected: ${PLATFORM}"
+
+resolve_adopt
 
 # Read the helper's own counter so we can tell whether this install produced a
 # fresh successful send (as opposed to a send that happened before an upgrade).

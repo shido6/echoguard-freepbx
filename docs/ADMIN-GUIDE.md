@@ -141,7 +141,8 @@ reads `agent.env`, because that file is root-only and contains the key.
 | `Echo did not recognize the node key` | removed, mistyped, or older than 24 hours | generate a new setup line, re-run |
 | `could not reach Echo at https://echo.echoguard.ca` | no outbound 443 / proxy / DNS | `curl -sI https://echo.echoguard.ca/connector/manifest.json` |
 | `integrity check failed` | stale cache or tampering | retry from a clean shell; never bypass |
-| `this phone system already sends its signals somewhere else` | existing `hep.conf` from another capture | re-run with `--adopt-existing`; compare `/var/backups/echo-connector/` after |
+| `adopting it (backup kept)` | stock FreePBX/Debian `hep.conf` ships with `enabled = no` | nothing — the disabled sample is replaced, original kept in `/var/backups/echo-connector/` |
+| `already forwards signals somewhere else` | `hep.conf` has a live capture from another system | re-run with `--adopt-existing`; compare `/var/backups/echo-connector/` after |
 | Node connected, `events: 0` | `res_hep*` not loaded, or `noload=` | `asterisk -rx 'module show like res_hep'`; load both modules; remove `noload=res_hep` lines |
 | `events` climbs on outbound calls only | capture id / uuid type mismatch | confirm `capture_id` in `hep.conf` matches `python3 /opt/echo-connector/connector.py --status` |
 | Service flaps | port taken by an older install | `ss -lunp \| grep <port>`; remove the stale process, then restart |

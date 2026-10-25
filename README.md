@@ -100,7 +100,8 @@ Finally, **Remove** the node in Echo so the key cannot be reused.
 | `could not fetch the manifest` | no outbound HTTPS to `echo.echoguard.ca` | `curl -sI https://echo.echoguard.ca/connector/manifest.json` from the box |
 | `integrity check failed` | stale or tampered copy behind a cache | retry; do not bypass the check |
 | `Echo did not recognize the node key` | key revoked, or mistyped | generate a fresh setup string in Echo and re-run |
-| install stops: "already sends its signals somewhere else" | `hep.conf` belongs to another capture | re-run with `--adopt-existing` (backup is kept in `/var/backups/echo-connector/`) |
+| install stops: "already forwards signals somewhere else" | `hep.conf` has a *live* capture from someone else | re-run with `--adopt-existing` (backup is kept in `/var/backups/echo-connector/`) |
+| install says "adopting it (backup kept)" | stock FreePBX/Debian `hep.conf` (`enabled = no`) | nothing to do — the installer replaces the disabled sample and keeps the original |
 | node shows connected, `events` stays at 0 | `res_hep*` not loaded | `asterisk -rx 'module load res_hep.so'`, same for `res_hep_pjsip.so`; check `noload=` in `modules.conf` |
 | node goes quiet | service stopped or no outbound path | `systemctl status echo-connector`, `tail /var/log/echo-connector/agent.log` |
 
