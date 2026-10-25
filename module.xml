@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module>
   <name>echoguard</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <localelang>en_US</localelang>
   <license>MIT</license>
   <copyright>2026 EchoGuard Communications</copyright>
   <author>Gregory Merriweather</author>
-  <url>https://echoguard.ca</url>
-  <description>Connect this FreePBX system to EchoGuard — remote snapshot, diagnose, and bounded reload operations through an outbound-only agent. No inbound ports are opened.</description>
+  <url>https://echo.echoguard.ca</url>
+  <description>Show this system's Echo connector status inside FreePBX — the node it is connected as, when it last reported, and how many SIP signalling events it has forwarded. Read-only: the connector itself is installed by the Echo setup string and runs as echo-connector.service.</description>
   <modulestatus>enabled</modulestatus>
   <requires>
     <dependency>
@@ -18,7 +18,7 @@
   <provides>
     <function>
       <name>echoguard_page</name>
-      <description>EchoGuard connector settings page</description>
+      <description>Echo connector status page</description>
     </function>
   </provides>
 </module>

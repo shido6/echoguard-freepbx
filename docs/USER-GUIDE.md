@@ -1,186 +1,128 @@
-# EchoGuard connector — User guide (running it from your EchoGuard console)
+# Echo connector — User guide (connecting a phone system)
 
-This guide is for the person who **uses** the connector — you connect your
-FreePBX system once, then ask EchoGuard for a snapshot, a diagnosis, or a
-reload without logging into the phone system. Server-side install details
-are in [ADMIN-GUIDE.md](ADMIN-GUIDE.md).
+For the person who **uses** the connector: you connect your FreePBX system
+once, then its calls and problems show up on your Echo page in plain words.
+Server-side details are in [ADMIN-GUIDE.md](ADMIN-GUIDE.md).
 
 ## 1. The 30-second version
 
-1. **Connect once:** add your FreePBX system in the console, copy the
-   one-line setup command, paste it on your server (needs sudo), done.
-2. **Ask for a look:** request a **snapshot** (how things are) or a
-   **diagnose** (what looks off) any time.
-3. **Ask for a reload** when you've made changes and need them to take effect.
-4. **Revoke** whenever you want the connection gone.
+1. **Connect once.** Press **+ Connect a phone system** on your Echo page, name
+   it, and paste the one line it gives you on the phone system's computer.
+2. **Ask.** Echo answers about that system in plain language — busy hours,
+   failed calls, who is registered, what broke.
+3. **Remove** whenever you want it gone. The key stops working immediately.
 
-No inbound ports. No shell access. Your server calls out; nothing calls in.
+No inbound ports. No audio. Your phone system calls out; nothing calls in.
 
 ## 2. Connecting a system
 
-1. In your EchoGuard console, go to **Phone systems → Add FreePBX**.
-2. Give it a name (e.g. `office-pbx`) and copy the setup command:
+1. Sign in at **https://echo.echoguard.ca**.
+2. Press **+ Connect a phone system**, type a name (e.g. `office phone
+   system`), and press **Generate the one-line setup**.
+3. Copy the line. It looks like:
 
    ```
-   sudo ./install.sh --endpoint https://app.echoguard.ca --node 3 --key <one-time-key>
+   curl -fsSL https://echo.echoguard.ca/connector/connect.sh | bash -s -- 'EC-8b11ef6c.<64 hex chars>'
    ```
 
-3. On your FreePBX server (SSH, one time):
+4. On the FreePBX server, over SSH, one time:
 
    ```bash
-   tar xzf echoguard-freepbx-0.1.0.tar.gz && cd echoguard-freepbx
-   sudo ./install.sh --endpoint https://app.echoguard.ca --node 3 --key <one-time-key>
+   curl -fsSL https://echo.echoguard.ca/connector/connect.sh | sudo bash -s -- 'EC-8b11ef6c.<64 hex chars>'
    ```
 
-4. Back in the console, the system turns **online** within ~15 seconds.
+   Or, if you were handed this repo's installer instead, run
+   `sudo ./install.sh 'EC-...'` with the same quoted key. Either way the key is
+   the part in single quotes.
 
-That key is shown once and only its fingerprint is stored on our side. If it
-ever leaks, revoke the system and add it again — a fresh key, one command.
+5. Back on your Echo page, the system appears in the phone systems panel within
+   about 30 seconds. Place a test call and the event count should move.
 
-## 3. What you can ask for
+The key is shown once and is good for 24 hours if you do not use it. If it
+expires, remove the node and generate a new line — one minute of work.
 
-| Request | Plain-English meaning | Good for |
-| --- | --- | --- |
-| **Snapshot** | "Show me what this system is running and how busy it is" — FreePBX/Asterisk versions, active calls, uptime, disk space | A quick health look; before/after changes |
-| **Diagnose** | "What looks off?" — SIP registrations (registered vs rejected), disk pressure, plain-language hints | "Phones won't register" style questions |
-| **Reload** | "Apply the configuration" (standard FreePBX/Asterisk reload) | After you changed something in the GUI |
-| **Reload one module** | Reload a single piece: core, pjsip, ivr, timeconditions, ringgroups, queues, miscapps, customappctx, confirm, findmefollow | A lighter touch than a full reload |
+## 3. What you can see
 
-Everything else is off the table on purpose: no shell, no dialplan edits, no
-database access, no recordings or audio.
+| Panel | What it answers |
+| --- | --- |
+| **Last seen** | is the phone system still talking to Echo? |
+| **Last signal** | the most recent call activity Echo received |
+| **Events** | how much signalling has come through since install |
+| **Version / platform** | what the box says it is running |
 
-## 4. Running a command
+From that activity Echo can answer things like:
 
-From your EchoGuard console: **Sidebar → Phone Systems**.
+- "How many calls came in this morning, and how many failed?"
+- "Is anything not registered right now?"
+- "Which trunk is rejecting calls?"
+- "What happened around 2pm yesterday?"
 
-1. Click the system in the list (green `online` = agent checking in).
-2. Press the op you want: **Snapshot**, **Diagnose**, **Reload**, or pick a
-   module and **Run** the module-reload.
-3. The command shows as *pending* until the agent picks it up on its next
-   poll (~10 seconds), then the result renders right under it — snapshot as
-   tiles, diagnose as plain checks + hints, everything else as raw JSON.
+You can also upload a `.pcap` from the phone system and Echo will read the
+signals and explain them — again, never the audio.
 
-History for the selected system (last 8 commands, who ran them, exit codes)
-sits below the buttons.
+## 4. Reading what Echo tells you
 
-Prefer the API? The same flow with `curl`:
+- **"N events, including M call attempts"** — normal traffic. M is the number
+  of calls that tried to set up in that window.
+- **Failed calls with a SIP code** — `401/403` is a credential or permission
+  problem, `408` is no answer from the far end, `503` is a carrier or trunk
+  outage. Echo names the trunk involved.
+- **Nothing registered** — the phone has lost its registration; usually
+  credentials, a network change, or the phone itself.
+- **One-way audio** — signalling looks fine on both legs; the audio path is
+  the problem. Echo says so rather than blaming the call.
+- **Quiet node** — no signals at all. That is a connector or `res_hep` issue on
+  the box, not a phone system outage (see the admin guide's troubleshooting).
 
-```bash
-# list your connected systems
-curl -s -H "Authorization: Bearer $TOKEN" \
-  https://app.echoguard.ca/api/fpbx/nodes
+## 5. Removing a system
 
-# ask for a snapshot
-curl -s -X POST -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"op":"snapshot"}' \
-  https://app.echoguard.ca/api/fpbx/nodes/1/commands
+Two steps, in this order:
 
-# read the result (a second or two later)
-curl -s -H "Authorization: Bearer $TOKEN" \
-  https://app.echoguard.ca/api/fpbx/nodes/1
-```
+1. On the phone system: `sudo ./uninstall.sh` (or the upstream
+   `... | sudo bash -s -- --uninstall`).
+2. On your Echo page: press **Remove** next to the system.
 
-The node detail response carries the last commands with their status
-(`pending → done/error`), exit code, and the result JSON. The agent polls
-every ~10 seconds, so results appear within one or two poll cycles.
+Step 2 kills the key immediately, so even if the box is offline or unreachable,
+removing the node is enough to stop it being accepted again.
 
-To reload a single module over the API:
+## 6. Privacy and limits (no surprises)
 
-```bash
-curl -s -X POST -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"op":"module_reload","module":"pjsip"}' \
-  https://app.echoguard.ca/api/fpbx/nodes/1/commands
-```
+- **Signalling only**: who called whom, which trunk, what failed, timing.
+- **Never audio**: no RTP, no recordings, no voicemail, no call contents.
+- **Never your configuration**: Echo does not read or change your dialplan,
+  extensions, trunks, or database. This connector is read-only on your side.
+- **Outbound only**: nothing listens for connections from the internet.
+- Files uploaded for decoding (`.pcap`) are deleted after reading.
 
-An unknown op or a module outside the allowlist is rejected immediately with
-the list of what's allowed — nothing reaches your phone system.
-
-## 5. Reading a diagnose result
-
-A diagnose result is numbers plus hints, for example:
-
-```json
-{
-  "registrations_registered": 4,
-  "registrations_bad": 1,
-  "disk_root_used_pct": 61,
-  "asterisk_responds": true,
-  "hints": ["One or more SIP registrations are rejected/unregistered — check trunk credentials and network reachability."]
-}
-```
-
-How to read it:
-
-- **registrations_bad > 0** — something isn't staying registered: trunk
-  credentials, a blocked IP, or your carrier. This is the classic "inbound
-  calls stopped working" cause.
-- **disk_root_used_pct ≥ 90** — the box is nearly full; recordings and
-  logs will start failing soon.
-- **asterisk_responds: false** — Asterisk itself isn't answering; nothing
-  else in the result can be trusted until it is back.
-- **empty hints** — the checks it ran came back clean.
-
-## 6. When to use which reload
-
-- Changed multiple things in the FreePBX GUI → **reload**.
-- Changed one thing (e.g. a PJSIP trunk) and want the smallest possible
-  interruption → **module_reload** on that module.
-- Nothing changed → don't reload. A reload drops nothing on a healthy box,
-  but there's no reason to poke it for fun.
-- Phones are dropping calls mid-conversation? Don't reload from here —
-  that's live traffic; treat it as an incident and get on the box.
-
-## 7. Disconnecting
-
-**Phone systems → the system → Revoke.** The agent's next poll gets a 401
-and stops itself. Nothing is left usable: the key dies server-side, and
-running `sudo ./uninstall.sh` on the box removes every file the installer
-added.
-
-## 8. Limits and roadmap (no surprises)
-
-**Today (v0.1):** snapshot · diagnose · reload · module_reload (fixed module
-list) · outbound-only agent · one-time key · instant revoke.
-
-**Not today:** editing routes/destinations/dialplans (coming behind strict
-schema validation — never free-form SQL), SIP signaling mirroring (separate
-Echo HEP lane, signaling only), multi-agent boxes.
-
-**Never:** free-form shell, audio/recordings, database writes.
-
-## 9. FAQ
+## 7. FAQ
 
 **Does anything connect inbound to my server?**
-No. The agent dials out over HTTPS every ~10 seconds. Your firewall needs
-no new openings.
+No. The helper dials out over HTTPS. Your firewall needs no new openings.
 
 **Can this break my phone system?**
-`reload` and `module_reload` are the same commands you'd run by hand in the
-GUI. They don't edit configuration — they apply what's already there. The
-ops that could misbehave (routing edits) aren't in v0.1 at all.
+It adds a capture instruction and a small helper. It does not edit routes,
+trunks, or extensions, and `uninstall.sh` restores the original config from a
+backup. Worst case is extra CPU/log noise, not lost calls.
 
 **What if my internet drops?**
-The agent retries until it's back; the console shows the node offline while
-disconnected. Your phone system never depends on the connection.
+The helper retries; your phone system never depends on it. The node shows as
+quiet until it reconnects, and signals during the gap are simply not sent.
 
-**Who else can control this?**
-Whoever holds a console login for your tenant — same trust model as the
-rest of your console. Revoke the node to cut everyone off instantly.
+**Who else can see this?**
+Whoever has a login to your Echo account. Removing the node cuts it off
+immediately.
 
-**Where's the setup key stored on your side?**
-Only as a SHA-256 hash. It can't be read back — if you lose it, you revoke
-and re-add to get a fresh one.
+**Where is the key kept?**
+On the phone system in a root-only file; on Echo's side only as a hash. It
+cannot be read back, which is why a lost key means generating a new one.
 
-## 10. Where this comes from (no surprises)
+## 8. Where this comes from (no surprises)
 
-If you ever go deeper than this connector, the signaling-capture world it
-eventually plugs into is open: **HEP** — the capture protocol from the
-[sipcapture project](https://sipcapture.org/). Two honest doors if you want to
-run all of that yourself: [HOMER](https://github.com/sipcapture/homer) (100%
-open source, install steps in the project wiki) or
-[hepic](https://hepic.tel/deploy/) (commercial on-prem — that page starts with
-a consultation, not a download). The ecosystem map:
+The capture rides **HEP** — the open signalling-capture protocol from the
+[sipcapture project](https://sipcapture.org/). If you ever want to run that
+world yourself, there are two honest doors: [HOMER](https://github.com/sipcapture/homer)
+(100% open source) and [hepic](https://hepic.tel/deploy/) (commercial
+on-prem). The ecosystem map is
 [awesome-hep](https://github.com/sipcapture/awesome-hep). None of them are us —
-we point at them because they built the floor we're standing on.
+they built the floor we stand on. FreePBX and Asterisk are their respective
+projects' trademarks; this is an independent connector.
